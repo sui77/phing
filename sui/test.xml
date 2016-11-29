@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="FooBar" default="build">
+
+    <target name="build">
+        <echo>Something</echo>
+        <supervisor apiurl="http://user:123@localhost:9001/RPC2">
+            <start name="name" failonerror="true" />
+        </supervisor>
+    </target>
+
+
+</project>
