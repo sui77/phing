@@ -24,7 +24,7 @@ require_once "phing/tasks/ext/xmlrpc/AbstractXmlRpcTask.php";
  * Make XMLRPC Calls
  *
  * <xmlrpc url="http://user:pass@127.0.0.1:1337/RPC2" method="supervisor.stopProcess" resultProperty="xmlResult" failonerror="false">
- *   <param name="name" type="string" value="foobar"></param>
+ *   <param name="name" value="foo" />
  * </xmlrpc>
  *
  * @author Suat Özgür <suat.oezguer@mindgeek.com>

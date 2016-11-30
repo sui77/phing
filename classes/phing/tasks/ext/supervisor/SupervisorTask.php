@@ -24,9 +24,10 @@ require_once "phing/tasks/ext/supervisor/SupervisorProcessAction.php";
  * SupervisorTask
  * start/stop/restart a supervisor process or group via xmlrpc (http://supervisord.org/)
  *
- * <supervisor url="http://user:pass@hostname" failonerror="false">
- *     <process name="myProcess" action="start" failonerror="true" />
- *     <process name="myProcessGroup" action="startGroup" />
+ * <supervisor url="http://user:pass@127.0.0.1:1337/RPC2" failonerror="true">
+ *     <process name="myProcessA" action="stop" failonerror="false"/>
+ *     <process name="myProcessB" action="restart" />
+ *     <process name="myProcessGroup" action="restartGroup" />
  * </supervisor>
  *
  */
@@ -48,6 +49,7 @@ class SupervisorTask extends AbstractXmlRpcTask {
         ),
 
     );
+
     private $processList = array();
 
     public function addProcess(SupervisorProcessAction $item) {
