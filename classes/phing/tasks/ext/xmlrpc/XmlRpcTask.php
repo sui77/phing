@@ -18,6 +18,8 @@
  * <http://phing.info>.
  */
 
+require_once "phing/tasks/ext/xmlrpc/AbstractXmlRpcTask.php";
+
 /**
  * Make XMLRPC Calls
  *
@@ -29,29 +31,11 @@
  * @package   phing.tasks.ext
  */
 
-class XmlRpcTask extends Task {
+class XmlRpcTask extends AbstractXmlRpcTask {
 
-    private $url = null;
-    private $method = null;
-    private $resultProperty = null;
-    private $failonerror = true;
+    protected $resultProperty = null;
+    protected $method = null;
     private $params = array();
-
-    /**
-     * @return boolean
-     */
-    public function isFailonerror()
-    {
-        return $this->failonerror;
-    }
-
-    /**
-     * @param boolean $failonerror
-     */
-    public function setFailonerror($failonerror)
-    {
-        $this->failonerror = StringHelper::booleanValue($failonerror);
-    }
 
     /**
      * @return null
@@ -70,22 +54,6 @@ class XmlRpcTask extends Task {
     }
 
     /**
-     * @return null
-     */
-    public function getUrl()
-    {
-        return $this->url;
-    }
-
-    /**
-     * @param null $url
-     */
-    public function setUrl($url)
-    {
-        $this->url = $url;
-    }
-
-    /**
      * @return string
      */
     public function getMethod()
@@ -101,10 +69,12 @@ class XmlRpcTask extends Task {
         $this->method = $method;
     }
 
+    /**
+     * @param Parameter $param
+     */
     public function addParam(Parameter $param) {
         $this->params[] = $param;
     }
-
 
     public function main()
     {
@@ -161,39 +131,4 @@ class XmlRpcTask extends Task {
         $this->log( 'response=' . htmlspecialchars($result), Project::MSG_VERBOSE );
     }
 
-    private function executeRpcCall($method, $params) {
-        if (count($params) == 0) {
-            $params = array(null);
-        }
-
-        $funcParams =  array_merge( array($method), array_values($params) );
-        $postData = call_user_func_array('xmlrpc_encode_request', $funcParams);
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->getUrl());
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS,  $postData);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        $response = curl_exec($ch);
-        if ($response === false) {
-            $msg = 'POST error: ' . curl_error($ch);
-            $this->log($msg, ($this->isFailonerror() ? Project::MSG_ERR : Project::MSG_WARN) );
-            if ($this->isFailonerror()) {
-                throw new BuildException($msg);
-            }
-        }
-
-        $responseDecoded = xmlrpc_decode($response);
-
-        if (is_array($responseDecoded) && xmlrpc_is_fault($responseDecoded)) {
-            $msg = 'XMLRPC fault: ' . $responseDecoded['faultString'] . ' (' . $responseDecoded['faultCode'] . ')';
-            $this->log($msg, ($this->isFailonerror() ? Project::MSG_ERR : Project::MSG_WARN) );
-            if ($this->isFailonerror()) {
-                throw new BuildException($msg);
-            }
-        }
-
-        return $response;
-    }
 }

@@ -17,76 +17,77 @@
  * <http://phing.info>.
  */
 
-require_once "phing/Task.php";
-require_once "phing/tasks/ext/supervisor/SupervisorStart.php";
-require_once "phing/tasks/ext/supervisor/SupervisorStop.php";
-require_once "phing/tasks/ext/supervisor/SupervisorRestart.php";
+require_once "phing/tasks/ext/xmlrpc/AbstractXmlRpcTask.php";
+require_once "phing/tasks/ext/supervisor/SupervisorProcessAction.php";
 
 /**
  * SupervisorTask
- * start/stop/restart a supervisor process via xmlrpc (http://supervisord.org/)
+ * start/stop/restart a supervisor process or group via xmlrpc (http://supervisord.org/)
  *
- * <supervisor apiurl="http://user:pass@hostname">
- *     <process name="name" action="start" failonerror="true" />
- *     <process name="name" action="start" failonerror="false" />
+ * <supervisor url="http://user:pass@hostname" failonerror="false">
+ *     <process name="myProcess" action="start" failonerror="true" />
+ *     <process name="myProcessGroup" action="startGroup" />
  * </supervisor>
  *
  */
-class SupervisorTask extends Task {
+class SupervisorTask extends AbstractXmlRpcTask {
 
-    private $apiUrl = '';
+    private $methodAliases = array(
+        'start'      => 'supervisor.startProcess',
+        'stop'       => 'supervisor.stopProcess',
+        'restart'    => array(
+            'supervisor.stopProcess',
+            'supervisor.startProcess',
+        ),
+
+        'startGroup' => 'supervisor.startProcessGroup',
+        'stopGroup' => 'supervisor.stopProcessGroup',
+        'restartGroup'    => array(
+            'supervisor.stopProcessGroup',
+            'supervisor.startProcessGroup',
+        ),
+
+    );
     private $processList = array();
 
-    /**
-     * @return string
-     */
-    public function getApiUrl()
-    {
-        return $this->apiUrl;
-    }
-
-    /**
-     * @param string $apiUrl
-     */
-    public function setApiUrl($apiUrl)
-    {
-        $this->apiUrl = $apiUrl;
-    }
-
-    public function addStart(SupervisorStart $item) {
+    public function addProcess(SupervisorProcessAction $item) {
         $this->processList[] = $item;
-    }
-
-    public function addStop(SupervisorStop $item) {
-        $this->processList[] = $item;
-    }
-
-    public function addRestart(SupervisorRestart $item) {
-        $this->processList[] = $item;
-    }
-
-
-    public function init()
-    {
-        if (!function_exists('xmlrpc_encode_request')) {
-            throw new BuildException('php-xmlrpc extension is not installed');
-        }
-
-        if (!function_exists('curl_init')) {
-            throw new BuildException('php-curl extension is not installed');
-        }
     }
 
     public function main()
     {
-        /** @var SupervisorAction $process */
+        /** @var SupervisorProcessAction $process */
         foreach ($this->processList as $process) {
-            $process->setApiUrl($this->getApiUrl());
-            $process->execute();
+            $failonerror = is_null($process->isFailonerror()) ? $this->isFailonerror() : $process->isFailonerror();
+
+            if (!isset($this->methodAliases[$process->getAction()])) {
+                throw new BuildException('Invalid action ' . $process->getAction() . ' (valid actions are: ' . implode(', ', array_keys($this->methodAliases)) );
+            }
+
+            $methods = $this->methodAliases[$process->getAction()];
+            if (!is_array($methods)) {
+                $methods = array($methods);
+            }
+
+            foreach ($methods as $method) {
+                try {
+                    $result = $this->executeRpcCall($method, array($process->getName()), $failonerror);
+                    $boolResult = xmlrpc_decode($result);
+                    if ($boolResult === true) {
+                        $this->log($process->getName() . ' ' . $method . ' successfuly done.', Project::MSG_INFO);
+                    } else {
+                        $this->log($process->getName() . ' ' . $method . ' failed (' . $result . ')', Project::MSG_INFO);
+                    }
+                } catch (BuildException $e) {
+                    if ($process->getAction() != 'restart' || $method != 'supervisor.stopProcess' || !preg_match('/NOT_RUNNING/', $e->getMessage())) {
+                        $this->log($process->getAction() . ' ' . $method . ' ' . $e->getMessage() );
+                        throw($e);
+                    }
+                }
+            }
+
         }
-        $this->log('supervisortask main');
-        curl_init();
-        xmlrpc_encode_request("foo", array('x' => 'y'));
+
     }
 
 
