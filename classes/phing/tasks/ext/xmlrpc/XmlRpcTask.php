@@ -38,38 +38,6 @@ class XmlRpcTask extends AbstractXmlRpcTask {
     private $params = array();
 
     /**
-     * @return null
-     */
-    public function getResultProperty()
-    {
-        return $this->resultProperty;
-    }
-
-    /**
-     * @param null $resultProperty
-     */
-    public function setResultProperty($resultProperty)
-    {
-        $this->resultProperty = $resultProperty;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMethod()
-    {
-        return $this->method;
-    }
-
-    /**
-     * @param string $method
-     */
-    public function setMethod($method)
-    {
-        $this->method = $method;
-    }
-
-    /**
      * @param Parameter $param
      */
     public function addParam(Parameter $param) {
@@ -129,6 +97,38 @@ class XmlRpcTask extends AbstractXmlRpcTask {
             );
         }
         $this->log( 'response=' . htmlspecialchars($result), Project::MSG_VERBOSE );
+    }
+
+    /**
+     * @return string
+     */
+    public function getMethod()
+    {
+        return $this->method;
+    }
+
+    /**
+     * @param string $method
+     */
+    public function setMethod($method)
+    {
+        $this->method = $method;
+    }
+
+    /**
+     * @return null
+     */
+    public function getResultProperty()
+    {
+        return $this->resultProperty;
+    }
+
+    /**
+     * @param null $resultProperty
+     */
+    public function setResultProperty($resultProperty)
+    {
+        $this->resultProperty = $resultProperty;
     }
 
 }

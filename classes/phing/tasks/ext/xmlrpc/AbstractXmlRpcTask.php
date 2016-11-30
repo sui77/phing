@@ -21,11 +21,7 @@
 require_once 'phing/Task.php';
 
 /**
- * Make XMLRPC Calls
- *
- * <xmlrpc url="http://user:pass@127.0.0.1:1337/RPC2" method="supervisor.stopProcess" resultProperty="xmlResult" failonerror="false">
- *   <param name="name" type="string" value="foobar"></param>
- * </xmlrpc>
+ * Base for XML-RPC client tasks
  *
  * @author Suat Özgür <suat.oezguer@mindgeek.com>
  * @package   phing.tasks.ext
@@ -35,38 +31,6 @@ abstract class AbstractXmlRpcTask extends Task {
     protected $url = null;
     protected $failonerror = true;
     private $params = array();
-
-    /**
-     * @return boolean
-     */
-    public function isFailonerror()
-    {
-        return $this->failonerror;
-    }
-
-    /**
-     * @param boolean $failonerror
-     */
-    public function setFailonerror($failonerror)
-    {
-        $this->failonerror = StringHelper::booleanValue($failonerror);
-    }
-
-    /**
-     * @return null
-     */
-    public function getUrl()
-    {
-        return $this->url;
-    }
-
-    /**
-     * @param null $url
-     */
-    public function setUrl($url)
-    {
-        $this->url = $url;
-    }
 
     public function addParam(Parameter $param) {
         $this->params[] = $param;
@@ -83,7 +47,8 @@ abstract class AbstractXmlRpcTask extends Task {
         }
     }
 
-    protected function executeRpcCall($method, $params, $failonerror = null) {
+    protected function executeRpcCall($method, $params, $failonerror = null)
+    {
 
         if (is_null($failonerror)) {
             $failonerror = $this->isFailonerror();
@@ -122,5 +87,37 @@ abstract class AbstractXmlRpcTask extends Task {
         }
 
         return $response;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isFailonerror()
+    {
+        return $this->failonerror;
+    }
+
+    /**
+     * @param boolean $failonerror
+     */
+    public function setFailonerror($failonerror)
+    {
+        $this->failonerror = StringHelper::booleanValue($failonerror);
+    }
+
+    /**
+     * @return null
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    /**
+     * @param null $url
+     */
+    public function setUrl($url)
+    {
+        $this->url = $url;
     }
 }
