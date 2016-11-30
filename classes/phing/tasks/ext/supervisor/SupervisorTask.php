@@ -78,7 +78,7 @@ class SupervisorTask extends AbstractXmlRpcTask {
                     if ($boolResult === true) {
                         $this->log($process->getName() . ' ' . $method . ' successfuly done.', Project::MSG_INFO);
                     } else {
-                        $this->log($process->getName() . ' ' . $method . ' failed (' . $result . ')', Project::MSG_INFO);
+                        $this->log($process->getName() . ' ' . $method . ' failed', Project::MSG_INFO);
                     }
                 } catch (BuildException $e) {
                     // suppress "not running" exception when stopping a process for a restart as I don't consider that as a restart failure

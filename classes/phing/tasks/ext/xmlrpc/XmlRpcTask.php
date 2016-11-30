@@ -88,6 +88,7 @@ class XmlRpcTask extends AbstractXmlRpcTask {
             $params[$param->getName()] = $value;
         }
 
+        $this->log( 'Calling ' . $this->getMethod(), Project::MSG_INFO);
 
         $result = $this->executeRpcCall($this->getMethod(), $params);
         if (!is_null($this->getResultProperty())) {
@@ -96,6 +97,7 @@ class XmlRpcTask extends AbstractXmlRpcTask {
                 $result
             );
         }
+
         $this->log( 'response=' . htmlspecialchars($result), Project::MSG_VERBOSE );
     }
 
